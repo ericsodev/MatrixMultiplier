@@ -1,2 +1,2 @@
 # MatrixMultiplier
-Learning about multi threaded applications and testing basic linear algebra knowledge.
+Learning about multicore processing applications and testing basic linear algebra knowledge.
