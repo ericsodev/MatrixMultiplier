@@ -27,18 +27,18 @@ def generate_random_matrix(rows: Optional[int], cols: Optional[int]) \
 if __name__ == '__main__':
     matrix1 = generate_random_matrix(1000, 500)
     matrix2 = generate_random_matrix(len(matrix1[0]), 1000)
-    print('Matrices, created')
+    print('Matrices, generated')
 
     # Test for single threaded approach
-    # start = timeit.default_timer()
-    # result1 = Matrix(matrix1).single_threaded_mul(Matrix(matrix2)).matrix
-    # end = timeit.default_timer()
-    # print(f'Results for single-threaded: {str(end - start + 1)} secs')
+    start = timeit.default_timer()
+    result1 = Matrix(matrix1).single_threaded_mul(Matrix(matrix2)).matrix
+    end = timeit.default_timer()
+    print(f'Results for single-threaded: {str(end - start + 1)} secs')
 
-    # Test for multi-threaded approach
+    # Test for multi-core approach
     start = timeit.default_timer()
     result2 = (Matrix(matrix1) * Matrix(matrix2)).matrix
     end = timeit.default_timer()
-    print(f'Results for multi-threaded: {str(end - start + 1)} secs')
+    print(f'Results for multi-core: {str(end - start + 1)} secs')
 
-    # print(f"Equal?: {result1==result2}")
+    print(f"Equal?: {result1==result2}")

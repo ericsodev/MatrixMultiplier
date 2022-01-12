@@ -1,9 +1,7 @@
 from __future__ import annotations
-
-import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
-
-from typing import Optional, List, Any, Union
+from typing import Optional, List, Any, Union, Tuple
+import multiprocessing
 import csv
 
 
@@ -65,6 +63,28 @@ def _dot_product_multithread(r: int, c: int, lst1: List[int],
         return None
 
 
+def _dot_product_multicore(r: int, lst1: List[int],
+                           other: List[List[int]]) -> Optional[
+    int, List[int]]:
+    """
+    Returns the dot product of two equal length lists of integers
+    :param lst1: List of integers
+    :param lst2: List of integers
+    :return: Dot product of both lists, None if unequal lengths
+    """
+    result = []
+
+    for lst2 in other:
+        value = 0
+        if len(lst2) != len(lst1):
+            return None
+        for i, j in zip(lst1, lst2):
+            value += i * j
+        result.append(value)
+
+    return r, result
+
+
 def _select_column(lst: List[List[Any]], col: int) -> Optional[List[Any]]:
     column = []
     for row in lst:
@@ -116,7 +136,7 @@ class Matrix:
 
     def __mul__(self, other: Matrix) -> Optional[Matrix]:
         """
-        Multi-threadedly multiply two matrices
+        Use multiple cores to multiply two matrices
         :param other: Second Matrix
         :return: Product of the matrices, None if matrices are invalid
         >>> a = Matrix("1,2,3/n4,5,6/n7,8,9")
@@ -125,8 +145,37 @@ class Matrix:
         [[30, 36, 42], [66, 81, 96], [102, 126, 150]]
         """
         if self.columns == other.rows != 0 and \
-                self.rows > 0 and other.columns:
-            arr = [[0 for _ in range(other.columns)] for _ in range(self.rows)]
+                self.rows > 0 and other.columns > 0:
+            new_matrix = [[0 for _ in \
+                           range(other.columns)] for _ in range(self.rows)]
+
+            with multiprocessing.Pool(processes=12) as p:
+                work = []
+                cols = [_select_column(other.matrix, c) for c in range(other.columns)]
+                for r in range(self.rows):
+                    work.append((r, self.matrix[r], cols))
+                results = p.starmap(_dot_product_multicore, work)
+                for result in results:
+                    r, lst = result
+                    new_matrix[r] = lst
+            return Matrix(new_matrix)
+
+        return None
+
+    def multi_threaded_mul(self, other: Matrix) -> Optional[Matrix]:
+        """
+        Multi-threadedly multiply two matrices
+        :param other: Second Matrix
+        :return: Product of the matrices, None if matrices are invalid
+        >>> a = Matrix("1,2,3/n4,5,6/n7,8,9")
+        >>> b = Matrix("1,2,3/n4,5,6/n7,8,9")
+        >>> a.multi_threaded_mul(b).matrix
+        [[30, 36, 42], [66, 81, 96], [102, 126, 150]]
+        """
+        if self.columns == other.rows != 0 and \
+                self.rows > 0 and other.columns > 0:
+            new_matrix = [[0 for _ in range(other.columns)] for _ in
+                          range(self.rows)]
             with ThreadPoolExecutor(max_workers=2) as executor:
                 futures = []
                 for i in range(self.rows):
@@ -139,10 +188,10 @@ class Matrix:
                 print("Loaded Threads")
                 for future in concurrent.futures.as_completed(futures):
                     r, c, v = future.result()
-                    arr[r][c] = v
+                    new_matrix[r][c] = v
                     print(f"Loaded [{r}][{c}]")
 
-            return Matrix(arr)
+            return Matrix(new_matrix)
         return None
 
     def single_threaded_mul(self, other: Matrix) -> Optional[Matrix]:
