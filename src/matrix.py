@@ -127,7 +127,7 @@ class Matrix:
         if self.columns == other.rows != 0 and \
                 self.rows > 0 and other.columns:
             arr = [[0 for _ in range(other.columns)] for _ in range(self.rows)]
-            with ThreadPoolExecutor(max_workers=64) as executor:
+            with ThreadPoolExecutor(max_workers=2) as executor:
                 futures = []
                 for i in range(self.rows):
                     for j in range(other.columns):

@@ -5,11 +5,12 @@ from timeit import default_timer
 from matrix import Matrix
 
 
-def generate_random_matrix(rows: Optional[int], cols: Optional[int]) -> List[List[int]]:
+def generate_random_matrix(rows: Optional[int], cols: Optional[int]) \
+        -> List[List[int]]:
     r = random.Random()
     r.seed(1808)
     if not rows:
-        rows = r.randint(300, 601)
+        rows = r.randint(1000, 2000)
     if not cols:
         cols = r.randint(300, 601)
 
@@ -24,8 +25,8 @@ def generate_random_matrix(rows: Optional[int], cols: Optional[int]) -> List[Lis
 
 
 if __name__ == '__main__':
-    matrix1 = generate_random_matrix(None, None)
-    matrix2 = generate_random_matrix(len(matrix1[0]), None)
+    matrix1 = generate_random_matrix(1000, 500)
+    matrix2 = generate_random_matrix(len(matrix1[0]), 1000)
     print('Matrices, created')
 
     # Test for single threaded approach
